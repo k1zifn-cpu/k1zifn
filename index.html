@@ -2,130 +2,214 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Telegram WebApp</title>
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <title>Telegram Gift Game</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
     <style>
         body {
             margin: 0;
-            padding: 0;
-            background: #0d0d0d;
-            color: white;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
-        }
-
-        .page {
-            padding: 20px;
-            animation: fade 0.4s;
-        }
-
-        @keyframes fade {
-            from {opacity: 0;}
-            to {opacity: 1;}
-        }
-
-        .card {
-            background: #1a1a1a;
-            padding: 20px;
-            border-radius: 20px;
-            margin-bottom: 15px;
-            box-shadow: 0 0 5px #000;
-        }
-
-        .menu {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: #111;
-            padding: 10px 0;
+            background: #0f0f0f;
+            color: #fff;
+            font-family: Arial, sans-serif;
             display: flex;
-            justify-content: space-around;
-            border-radius: 20px 20px 0 0;
-            box-shadow: 0 -2px 10px #000;
+            flex-direction: column;
+            align-items: center;
         }
 
-        .menu button {
-            background: none;
+        h2 {
+            margin-top: 20px;
+        }
+
+        #grid {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(4, 70px);
+            grid-gap: 10px;
+        }
+
+        .slot {
+            width: 70px;
+            height: 70px;
+            background: #1c1c1c;
+            border: 2px solid #2b2b2b;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            user-select: none;
+        }
+
+        #buyBtn {
+            margin-top: 20px;
+            padding: 15px 30px;
+            background: #2481cc;
             border: none;
             color: white;
-            font-size: 14px;
-            opacity: 0.7;
+            border-radius: 12px;
+            font-size: 18px;
         }
 
-        .menu button.active {
-            opacity: 1;
+        #money {
+            margin-top: 10px;
+            font-size: 20px;
         }
 
+        #trash {
+            width: 120px;
+            height: 120px;
+            background: #2b2b2b;
+            border-radius: 20px;
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 32px;
+            border: 2px dashed #444;
+        }
     </style>
 </head>
-
 <body>
 
-<div id="page_profile" class="page">
-    <div class="card">
-        <h2>Профиль</h2>
-        <p id="user_name"></p>
-        <p id="user_id"></p>
-        <p><b>Статус:</b> Админ</p>
-    </div>
-</div>
+<h2>🎁 Gift Merge Game</h2>
 
-<div id="page_groups" class="page" style="display:none">
-    <div class="card">
-        <h2>Группы</h2>
-        <p>Тут будет список групп (нужно API на сервере)</p>
-    </div>
-</div>
+<div id="money">Баланс: ...</div>
 
-<div id="page_games" class="page" style="display:none">
-    <div class="card">
-        <h2>Игры</h2>
-        <p>Выбор игр…</p>
-    </div>
-</div>
+<div id="grid"></div>
 
-<div id="page_settings" class="page" style="display:none">
-    <div class="card">
-        <h2>Настройки</h2>
-        <p>Информация о боте…</p>
-    </div>
-</div>
+<button id="buyBtn">Купить подарок (1 монета)</button>
 
-<div class="menu">
-    <button onclick="openPage('profile')" id="btn_profile" class="active">Профиль</button>
-    <button onclick="openPage('groups')" id="btn_groups">Группы</button>
-    <button onclick="openPage('games')" id="btn_games">Игры</button>
-    <button onclick="openPage('settings')" id="btn_settings">Настройки</button>
-</div>
-
+<div id="trash">🗑️</div>
 
 <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    document.getElementById("user_name").textContent = "Имя: " + tg.initDataUnsafe.user.first_name;
-    document.getElementById("user_id").textContent = "ID: " + tg.initDataUnsafe.user.id;
+    const user = tg.initDataUnsafe.user || { id: "guest" };
+    const userId = user.id;
 
-    function openPage(page) {
-        document.getElementById("page_profile").style.display = "none";
-        document.getElementById("page_groups").style.display = "none";
-        document.getElementById("page_games").style.display = "none";
-        document.getElementById("page_settings").style.display = "none";
+    // --- Gifts ---
+    const gifts = [
+        { emoji: "🧸", lvl: 1, chance: 10 },
+        { emoji: "💖", lvl: 2, chance: 9 },
+        { emoji: "🌹", lvl: 3, chance: 7 },
+        { emoji: "🎂", lvl: 4, chance: 5 },
+        { emoji: "💐", lvl: 5, chance: 4 },
+        { emoji: "🍾", lvl: 6, chance: 3 },
+        { emoji: "🚀", lvl: 7, chance: 2 },
+        { emoji: "💍", lvl: 8, chance: 1 },
+        { emoji: "💎", lvl: 9, chance: 0.5 },
+        { emoji: "🎉", lvl: 10, chance: 0.2 }
+    ];
 
-        document.getElementById("btn_profile").classList.remove("active");
-        document.getElementById("btn_groups").classList.remove("active");
-        document.getElementById("btn_games").classList.remove("active");
-        document.getElementById("btn_settings").classList.remove("active");
+    // Load game data
+    let data = JSON.parse(localStorage.getItem("game_" + userId));
 
-        document.getElementById("page_" + page).style.display = "block";
-        document.getElementById("btn_" + page).classList.add("active");
+    if (!data) {
+        data = {
+            money: 100,
+            slots: Array(16).fill(null)
+        };
+        save();
     }
+
+    function save() {
+        localStorage.setItem("game_" + userId, JSON.stringify(data));
+    }
+
+    function updateUI() {
+        document.getElementById("money").innerText = "Баланс: " + data.money;
+
+        const grid = document.getElementById("grid");
+        grid.innerHTML = "";
+
+        data.slots.forEach((item, index) => {
+            const div = document.createElement("div");
+            div.className = "slot";
+            div.dataset.index = index;
+
+            if (item) div.textContent = item.emoji;
+
+            div.draggable = item !== null;
+
+            div.addEventListener("dragstart", dragStart);
+            div.addEventListener("dragover", dragOver);
+            div.addEventListener("drop", drop);
+
+            grid.appendChild(div);
+        });
+    }
+
+    function getRandomGift() {
+        let rand = Math.random() * 100;
+        let sum = 0;
+
+        for (let g of gifts) {
+            sum += g.chance;
+            if (rand <= sum) return g;
+        }
+        return gifts[0];
+    }
+
+    document.getElementById("buyBtn").onclick = () => {
+        if (data.money < 1) return alert("Недостаточно монет!");
+        let empty = data.slots.indexOf(null);
+        if (empty === -1) return alert("Нет свободных слотов!");
+
+        data.money -= 1;
+        data.slots[empty] = getRandomGift();
+        save();
+        updateUI();
+    };
+
+    // Drag & Drop
+    let draggedIndex = null;
+
+    function dragStart(e) {
+        draggedIndex = e.target.dataset.index;
+    }
+
+    function dragOver(e) {
+        e.preventDefault();
+    }
+
+    function drop(e) {
+        let targetIndex = e.target.dataset.index;
+
+        if (draggedIndex === null) return;
+
+        let a = data.slots[draggedIndex];
+        let b = data.slots[targetIndex];
+
+        // Мерж одинаковых
+        if (a && b && a.lvl === b.lvl) {
+            let next = gifts.find(g => g.lvl === a.lvl + 1);
+            data.slots[targetIndex] = next || b;
+            data.slots[draggedIndex] = null;
+        } 
+        // swap
+        else {
+            data.slots[targetIndex] = a;
+            data.slots[draggedIndex] = b;
+        }
+
+        save();
+        updateUI();
+    }
+
+    // Trash delete
+    const trash = document.getElementById("trash");
+
+    trash.addEventListener("dragover", e => e.preventDefault());
+    trash.addEventListener("drop", () => {
+        if (draggedIndex !== null) {
+            data.slots[draggedIndex] = null;
+            save();
+            updateUI();
+        }
+    });
+
+    updateUI();
 </script>
 
 </body>
 </html>
-
