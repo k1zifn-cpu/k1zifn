@@ -1,110 +1,131 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<title>Настройки групп</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<style>
-    body {
-        background: #111;
-        color: #fff;
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 16px;
-    }
-    .group {
-        background: #222;
-        margin-bottom: 12px;
-        padding: 12px;
-        border-radius: 10px;
-        cursor: pointer;
-        border: 1px solid #333;
-    }
-    .hidden-admin {
-        display: none;
-    }
-    .settings {
-        margin-top: 10px;
-        padding: 10px;
-        background: #1b1b1b;
-        border-radius: 10px;
-        border: 1px solid #333;
-    }
-    .toggle {
-        display: flex;
-        justify-content: space-between;
-        padding: 8px 0;
-    }
-</style>
+    <meta charset="UTF-8">
+    <title>Telegram WebApp</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #0d0d0d;
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
+        }
+
+        .page {
+            padding: 20px;
+            animation: fade 0.4s;
+        }
+
+        @keyframes fade {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+
+        .card {
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 0 5px #000;
+        }
+
+        .menu {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #111;
+            padding: 10px 0;
+            display: flex;
+            justify-content: space-around;
+            border-radius: 20px 20px 0 0;
+            box-shadow: 0 -2px 10px #000;
+        }
+
+        .menu button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        .menu button.active {
+            opacity: 1;
+        }
+
+    </style>
 </head>
+
 <body>
 
-<h2>Управление группами</h2>
+<div id="page_profile" class="page">
+    <div class="card">
+        <h2>Профиль</h2>
+        <p id="user_name"></p>
+        <p id="user_id"></p>
+        <p><b>Статус:</b> Админ</p>
+    </div>
+</div>
 
-<div id="info"></div>
-<div id="groups"></div>
+<div id="page_groups" class="page" style="display:none">
+    <div class="card">
+        <h2>Группы</h2>
+        <p>Тут будет список групп (нужно API на сервере)</p>
+    </div>
+</div>
+
+<div id="page_games" class="page" style="display:none">
+    <div class="card">
+        <h2>Игры</h2>
+        <p>Выбор игр…</p>
+    </div>
+</div>
+
+<div id="page_settings" class="page" style="display:none">
+    <div class="card">
+        <h2>Настройки</h2>
+        <p>Информация о боте…</p>
+    </div>
+</div>
+
+<div class="menu">
+    <button onclick="openPage('profile')" id="btn_profile" class="active">Профиль</button>
+    <button onclick="openPage('groups')" id="btn_groups">Группы</button>
+    <button onclick="openPage('games')" id="btn_games">Игры</button>
+    <button onclick="openPage('settings')" id="btn_settings">Настройки</button>
+</div>
+
 
 <script>
-    const tg = Telegram.WebApp;
+    const tg = window.Telegram.WebApp;
     tg.expand();
 
-    const ADMIN_ID = "6724600945";
+    document.getElementById("user_name").textContent = "Имя: " + tg.initDataUnsafe.user.first_name;
+    document.getElementById("user_id").textContent = "ID: " + tg.initDataUnsafe.user.id;
 
-    const userId = tg.initDataUnsafe.user?.id;
+    function openPage(page) {
+        document.getElementById("page_profile").style.display = "none";
+        document.getElementById("page_groups").style.display = "none";
+        document.getElementById("page_games").style.display = "none";
+        document.getElementById("page_settings").style.display = "none";
 
-    // Показываем имя включившему
-    document.getElementById("info").innerHTML =
-        `<b>Привет, ${tg.initDataUnsafe.user?.first_name}</b><br>
-         Ваш ID: ${userId}`;
+        document.getElementById("btn_profile").classList.remove("active");
+        document.getElementById("btn_groups").classList.remove("active");
+        document.getElementById("btn_games").classList.remove("active");
+        document.getElementById("btn_settings").classList.remove("active");
 
-    // Проверяем админ ли он
-    const isAdmin = String(userId) === ADMIN_ID;
-
-    // 🔥 Загружаем группы с сервера
-    fetch("https://your-server.com/api/groups?user=" + userId)
-        .then(res => res.json())
-        .then(data => {
-            const container = document.getElementById("groups");
-
-            data.groups.forEach(group => {
-                let div = document.createElement("div");
-                div.className = "group";
-                div.innerHTML = `
-                    <b>${group.title}</b><br>
-                    <small>ID: ${group.id}</small>
-
-                    <div class="settings ${isAdmin ? '' : 'hidden-admin'}">
-                        <div class="toggle">
-                            <span>Анти-спам</span>
-                            <input data-id="${group.id}" type="checkbox" class="spamToggle"
-                                   ${group.anti_spam ? "checked" : ""}>
-                        </div>
-                    </div>
-                `;
-
-                container.appendChild(div);
-            });
-        });
-
-    // 🔥 Переключение антиспама
-    document.addEventListener("change", e => {
-        if (e.target.classList.contains("spamToggle")) {
-            const groupId = e.target.dataset.id;
-            const enabled = e.target.checked;
-
-            fetch("https://your-server.com/api/set_antispam", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    user: userId,
-                    group_id: groupId,
-                    enable: enabled
-                })
-            });
-        }
-    });
-
+        document.getElementById("page_" + page).style.display = "block";
+        document.getElementById("btn_" + page).classList.add("active");
+    }
 </script>
 
 </body>
 </html>
+
