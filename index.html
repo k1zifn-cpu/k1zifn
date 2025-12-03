@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Настройки групп</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+    body {
+        background: #111;
+        color: #fff;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 16px;
+    }
+    .group {
+        background: #222;
+        margin-bottom: 12px;
+        padding: 12px;
+        border-radius: 10px;
+        cursor: pointer;
+        border: 1px solid #333;
+    }
+    .hidden-admin {
+        display: none;
+    }
+    .settings {
+        margin-top: 10px;
+        padding: 10px;
+        background: #1b1b1b;
+        border-radius: 10px;
+        border: 1px solid #333;
+    }
+    .toggle {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+    }
+</style>
+</head>
+<body>
+
+<h2>Управление группами</h2>
+
+<div id="info"></div>
+<div id="groups"></div>
+
+<script>
+    const tg = Telegram.WebApp;
+    tg.expand();
+
+    const ADMIN_ID = "6724600945";
+
+    const userId = tg.initDataUnsafe.user?.id;
+
+    // Показываем имя включившему
+    document.getElementById("info").innerHTML =
+        `<b>Привет, ${tg.initDataUnsafe.user?.first_name}</b><br>
+         Ваш ID: ${userId}`;
+
+    // Проверяем админ ли он
+    const isAdmin = String(userId) === ADMIN_ID;
+
+    // 🔥 Загружаем группы с сервера
+    fetch("https://your-server.com/api/groups?user=" + userId)
+        .then(res => res.json())
+        .then(data => {
+            const container = document.getElementById("groups");
+
+            data.groups.forEach(group => {
+                let div = document.createElement("div");
+                div.className = "group";
+                div.innerHTML = `
+                    <b>${group.title}</b><br>
+                    <small>ID: ${group.id}</small>
+
+                    <div class="settings ${isAdmin ? '' : 'hidden-admin'}">
+                        <div class="toggle">
+                            <span>Анти-спам</span>
+                            <input data-id="${group.id}" type="checkbox" class="spamToggle"
+                                   ${group.anti_spam ? "checked" : ""}>
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(div);
+            });
+        });
+
+    // 🔥 Переключение антиспама
+    document.addEventListener("change", e => {
+        if (e.target.classList.contains("spamToggle")) {
+            const groupId = e.target.dataset.id;
+            const enabled = e.target.checked;
+
+            fetch("https://your-server.com/api/set_antispam", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    user: userId,
+                    group_id: groupId,
+                    enable: enabled
+                })
+            });
+        }
+    });
+
+</script>
+
+</body>
+</html>
