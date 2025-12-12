@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WebApp — Stars Payment</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+<h1>Оплатить звёздами (Stars)</h1>
+<label>Сколько звёзд: <input id="amount" value="10" type="number"/></label>
+<button id="buy">Купить</button>
+
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.ready();
+
+
+document.getElementById('buy').addEventListener('click', async () => {
+const amount = parseInt(document.getElementById('amount').value) || 1;
+
+
+// Отправляем на сервер запрос на создание invoice
+const resp = await fetch('/create_invoice', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ user_id: tg.initDataUnsafe?.user?.id || 0, amount, title: 'Покупка в WebApp', description: 'Оплата звёздами XTR' })
+});
+
+
+const data = await resp.json();
+if (!data.ok) { alert('Ошибка: ' + data.error); return; }
+
+
+// Открываем счёт внутри Telegram Mini App
+// WebApp.openInvoice принимает ссылку (invoice_link)
+tg.openInvoice(data.invoice_link, function(status) {
+if (status === 'paid') {
+tg.showAlert('Оплата успешна — спасибо!');
+// Здесь можно сообщить серверу о выполнении заказа
+} else {
+console.log('Статус оплаты:', status);
+}
+});
+});
+</script>
+</body>
+</html>
