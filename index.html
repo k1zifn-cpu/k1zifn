@@ -4,31 +4,93 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Отриманя зазазу для мами</title>
+
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-  body { background: #121212; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-  .container { width: 90%; max-width: 400px; text-align: center; background: #1e1e1e; border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); perspective: 1000px; }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
 
-  .garland { display: flex; justify-content: center; margin-bottom: 20px; }
-  .light { width: 15px; height: 15px; border-radius: 50%; margin: 0 5px; background: #ff3; animation: blink 1s infinite; }
-  .light:nth-child(even) { background: #0ff; animation-delay: 0.5s; }
-  @keyframes blink { 0%, 50%, 100% { opacity: 1; } 25%, 75% { opacity: 0.3; } }
+body {
+  background: #121212;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+}
 
-  h1 { font-size: 1.5em; margin-bottom: 20px; text-shadow: 0 0 10px #fff; }
+.container {
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  background: #1e1e1e;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
 
-  button { background: #333; color: #fff; border: none; border-radius: 10px; padding: 10px 20px; margin: 10px; font-size: 1em; box-shadow: 0 5px 15px rgba(0,0,0,0.5); cursor: pointer; transition: all 0.3s; }
-  button:hover { transform: translateY(-2px) scale(1.05); }
-  input { width: 60%; padding: 10px; border-radius: 10px; border: none; margin: 10px 0; text-align: center; font-size: 1em; }
+.garland {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
 
-  .hidden { display: none; }
+.light {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  margin: 0 5px;
+  background: #ff3;
+  animation: blink 1s infinite;
+}
 
-  @media (max-width: 500px) {
-    h1 { font-size: 1.2em; }
-    button { padding: 8px 15px; font-size: 0.9em; }
-    input { width: 80%; }
-  }
+.light:nth-child(even) {
+  background: #0ff;
+  animation-delay: 0.5s;
+}
+
+@keyframes blink {
+  0%, 50%, 100% { opacity: 1; }
+  25%, 75% { opacity: 0.3; }
+}
+
+h1 {
+  font-size: 1.4em;
+  margin-bottom: 20px;
+}
+
+button {
+  background: #333;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  margin: 10px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  transform: scale(1.05);
+}
+
+input {
+  width: 70%;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  margin: 10px 0;
+  text-align: center;
+  font-size: 1em;
+}
 </style>
 </head>
+
 <body>
 
 <div class="container" id="container">
@@ -38,54 +100,52 @@
     <div class="light"></div><div class="light"></div><div class="light"></div>
   </div>
 
-  <div id="step" class="step">
+  <div class="step">
     <h1>Мама, ты серьезно думала, что мы тебе так просто отдадим iPhone 17 (Weiss)?</h1>
-    <button class="btn" onclick="nextStep()">Да</button>
-    <button class="btn" onclick="nextStep()">Да</button>
+    <button onclick="nextStep()">Да</button>
+    <button onclick="nextStep()">Да</button>
   </div>
 
 </div>
 
 <script>
-let container = document.getElementById('container');
+const container = document.getElementById("container");
 
-function createStep(question, correctCode, nextFunc) {
+function createStep(text, code, nextStepName) {
   container.innerHTML = `
     <div class="garland">
       <div class="light"></div><div class="light"></div><div class="light"></div>
       <div class="light"></div><div class="light"></div><div class="light"></div>
     </div>
     <div class="step">
-      <h1>${question}</h1>
-      <input type="text" id="codeInput" placeholder="Введите код">
+      <h1>${text}</h1>
+      <input id="codeInput" placeholder="Введите код">
       <br>
-      <button class="btn" onclick="checkCode('${correctCode}', ${nextFunc.name})">Продолжить</button>
+      <button onclick="checkCode('${code}', '${nextStepName}')">Продолжить</button>
     </div>
   `;
 }
 
-function checkCode(correct, nextFunc) {
-  let val = document.getElementById('codeInput').value;
-  if (val === correct) {
-    nextFunc();
+function checkCode(correct, nextStepName) {
+  const value = document.getElementById("codeInput").value;
+  if (value === correct) {
+    window[nextStepName]();
   } else {
     alert("Неверно, попробуй еще раз!");
   }
 }
 
-// Шаги с кодами
-function step1() { createStep("Что тебя взбодряет утром?", "1303", step2); }
-function step2() { createStep("Что ты ОЧЕНЬ часто делаешь на балконе?", "1983", step3); }
-function step3() { createStep("Ты спишь не одна...", "1712", step4); }
-function step4() { createStep("Зимой и летом одним цветом?", "2198", step5); }
-function step5() { createStep("Там ты печешь булочки", "0709", step6); }
-function step6() { createStep("Что ты включаешь перед сном?", "0304", step7)
-function step7() { createStep("В это стреляют...", "2025", step8); }
-function step8() { createStep("Иструмент использования метофоры в песне S.O.S - Токарев? ", "4723", finalStep); }
+/* Вопросы */
+function step1() { createStep("Что тебя взбодряет утром?", "1303", "step2"); }
+function step2() { createStep("Что ты ОЧЕНЬ часто делаешь на балконе?", "1983", "step3"); }
+function step3() { createStep("Ты спишь не одна...", "1712", "step4"); }
+function step4() { createStep("Зимой и летом одним цветом?", "2198", "step5"); }
+function step5() { createStep("Там ты печешь булочки", "0709", "step6"); }
+function step6() { createStep("Что ты включаешь перед сном?", "0304", "step7"); }
+function step7() { createStep("В это стреляют...", "2025", "step8"); }
+function step8() { createStep("Инструмент использования метафоры в песне S.O.S - Токарев?", "4723", "finalStep"); }
 
-                  
-
-// Финальный экран с убегающей кнопкой
+/* Финал */
 function finalStep() {
   container.innerHTML = `
     <div class="garland">
@@ -94,43 +154,36 @@ function finalStep() {
     </div>
     <div class="step">
       <h1>А ты уверена, что хочешь его найти?</h1>
-      <button id="runBtn" class="btn">Да</button>
-      <button id="yesBtn" class="btn">Нет</button>
+      <button id="runBtn">Да</button>
+      <button id="yesBtn">Нет</button>
     </div>
   `;
 
-  let runBtn = document.getElementById('runBtn');
-  runBtn.addEventListener('mouseenter', () => {
-    runBtn.style.position = 'absolute';
-    runBtn.style.top = Math.random() * (window.innerHeight - 60) + 'px';
-    runBtn.style.left = Math.random() * (window.innerWidth - 100) + 'px';
+  const runBtn = document.getElementById("runBtn");
+  runBtn.addEventListener("mouseenter", () => {
+    runBtn.style.position = "absolute";
+    runBtn.style.top = Math.random() * (window.innerHeight - 60) + "px";
+    runBtn.style.left = Math.random() * (window.innerWidth - 100) + "px";
   });
 
-  let yesBtn = document.getElementById('yesBtn');
-  yesBtn.addEventListener('click', () => {
-    yesBtn.textContent = "Да";
-    setTimeout(() => {
-      container.innerHTML = `
-        <div class="garland">
-          <div class="light"></div><div class="light"></div><div class="light"></div>
-          <div class="light"></div><div class="light"></div><div class="light"></div>
-        </div>
-        <div class="step">
-          <h1>А ты в сумке смотрела?</h1>
-          <button class="btn" onclick="location.reload()">Закончить</button>
-        </div>
-      `;
-    }, 200);
-  });
+  document.getElementById("yesBtn").onclick = () => {
+    container.innerHTML = `
+      <div class="garland">
+        <div class="light"></div><div class="light"></div><div class="light"></div>
+        <div class="light"></div><div class="light"></div><div class="light"></div>
+      </div>
+      <div class="step">
+        <h1>А ты в сумке смотрела?</h1>
+        <button onclick="location.reload()">Закончить</button>
+      </div>
+    `;
+  };
 }
 
-// Первый переход с первой кнопки
-function nextStep() { step1(); }
+function nextStep() {
+  step1();
+}
 </script>
 
 </body>
 </html>
-
-
-
-
